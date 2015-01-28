@@ -14,6 +14,7 @@ public class MainActivity extends ActionBarActivity {
 
     // expr = the current string to be calculated
     StringBuffer expr;
+    int memo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +29,11 @@ public class MainActivity extends ActionBarActivity {
         tvExpr.setText(expr.toString());
     }
 
+    public void updateAnsDisplay(String s) {
+        TextView tvAns = (TextView)findViewById(R.id.tvAns);
+        tvAns.setText(s);
+    }
+
     public void recalculate() {
         //Calculate the expression and display the output
 
@@ -36,6 +42,37 @@ public class MainActivity extends ActionBarActivity {
         //reference: http://stackoverflow.com/questions/2206378/how-to-split-a-string-but-also-keep-the-delimiters
         String e = expr.toString();
         String[] tokens = e.split("((?<=\\+)|(?=\\+))|((?<=\\-)|(?=\\-))|((?<=\\*)|(?=\\*))|((?<=/)|(?=/))");
+        int i = tokens.length;
+        String op = "";
+        int num = 0;
+        int x;
+
+        num = Integer.parseInt(tokens[0]);
+
+        for (x = 1; x < i; x++) {
+            if (x%2==1) {
+                op = tokens[x];
+            } else {
+
+                if (op.equals("+"))
+                {
+                    num = num + Integer.parseInt(tokens[x]);
+                } else if (op.equals("-"))
+                {
+                    num = num - Integer.parseInt(tokens[x]);
+                } else if (op.equals("*"))
+                {
+                    num = num * Integer.parseInt(tokens[x]);
+                } else if (op.equals("/"))
+                {
+                    num = num / Integer.parseInt(tokens[x]);
+                }
+
+                updateAnsDisplay(Integer.toString(num));
+
+            }
+        }
+
     }
 
     public void digitClicked(View v) {
@@ -50,9 +87,30 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void operatorClicked(View v) {
+        String d = ((TextView)v).getText().toString();
+        String e = expr.toString();
+
+
+        if(!((e.endsWith("+")) || (e.endsWith("-")) || (e.endsWith("*")) || (e.endsWith("/")) || (e.isEmpty())))
+        {
+            expr.append(d);
+
+            updateExprDisplay();
+
+            recalculate();
+        }
         //IF the last character in expr is not an operator and expr is not "",
         //THEN append the clicked operator and updateExprDisplay,
         //ELSE do nothing
+    }
+
+    public void equalClicked(View v) {
+        TextView tvAns = (TextView)findViewById(R.id.tvAns);
+        expr = new StringBuffer();
+        expr.append(tvAns.getText().toString());
+        updateAnsDisplay("");
+        updateExprDisplay();
+
     }
 
     public void ACClicked(View v) {
@@ -72,6 +130,45 @@ public class MainActivity extends ActionBarActivity {
             updateExprDisplay();
         }
     }
+
+
+    public void MClicked(View v) {
+        //Remove the last character from expr, and updateExprDisplay
+        String d = ((TextView)v).getText().toString();
+        TextView tvAns = (TextView)findViewById(R.id.tvAns);
+        if(d.equals("M+"))
+        {
+            memo = memo + Integer.parseInt(tvAns.getText().toString());
+            Toast t = Toast.makeText(this.getApplicationContext(),
+                    "memo ="+memo, Toast.LENGTH_SHORT);
+            t.show();
+        }
+        if(d.equals("M-"))
+        {
+            memo = memo - Integer.parseInt(tvAns.getText().toString());
+            Toast t = Toast.makeText(this.getApplicationContext(),
+                    "memo ="+memo, Toast.LENGTH_SHORT);
+            t.show();
+        }
+        if(d.equals("MR"))
+        {
+            expr = new StringBuffer();
+            expr.append(memo);
+            updateExprDisplay();
+            updateAnsDisplay(memo+"");
+            Toast t = Toast.makeText(this.getApplicationContext(),
+                    "memo ="+memo, Toast.LENGTH_SHORT);
+            t.show();
+        }
+        if(d.equals("MC"))
+        {
+            memo = 0;
+            Toast t = Toast.makeText(this.getApplicationContext(),
+                    "memo ="+memo, Toast.LENGTH_SHORT);
+            t.show();
+        }
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
